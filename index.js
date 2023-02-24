@@ -1,47 +1,49 @@
-const express=require("express");
-const https=require("https");
-const bodyParser=require("body-parser");
-const request=require("request");
+require("dotenv").config();
+const express = require("express");
+const https = require("https");
+const bodyParser = require("body-parser");
+const request = require("request");
 
-const app=express();
+const app = express();
 
-app.use(express.static(__dirname+"/public"));
-app.use(bodyParser.urlencoded({extended:true}));
+app.use(express.static(__dirname + "/public"));
+app.use(bodyParser.urlencoded({ extended: true }));
 
-app.get("/",function(req,res){
-  res.sendFile(__dirname+"/signup.html");
+app.get("/", function (req, res) {
+  res.sendFile(__dirname + "/signup.html");
 });
 
-app.post("/",function(req,res){
-  const firstName=req.body.firstName;
-  const lastName=req.body.lastName;
-  const email=req.body.email;
-  const data={
-    members:[
+app.post("/", function (req, res) {
+  const firstName = req.body.firstName;
+  const lastName = req.body.lastName;
+  const email = req.body.email;
+  const data = {
+    members: [
       {
-        email_address:email,
-        status:"subscribed",
-        merge_fields:{
-          FNAME:firstName,
-          LNAME:lastName,
-        }
-      }
-    ]
+        email_address: email,
+        status: "subscribed",
+        merge_fields: {
+          FNAME: firstName,
+          LNAME: lastName,
+        },
+      },
+    ],
   };
-  const jsonData=JSON.stringify(data);
-  const url="https://us21.api.mailchimp.com/3.0/lists/c74cbb65d7";
-  const options={
-    method:"POST",
-    auth:"_:c6667fa51e2ed39fade4b499504fb9b8-us21"
+  const jsonData = JSON.stringify(data);
+  const authField = "_:" + process.env.API_KEY;
+  const url = "https://us21.api.mailchimp.com/3.0/lists/c74cbb65d7";
+  const options = {
+    method: "POST",
+    auth: authField,
   };
-  const request=https.request(url,options,function(response){
+  const request = https.request(url, options, function (response) {
     // console.log("REsponse");
-    if(response.statusCode === 200){
-      res.sendFile(__dirname+"/success.html");
-    }else{
-      res.sendFile(__dirname+"/failure.html");
+    if (response.statusCode === 200) {
+      res.sendFile(__dirname + "/success.html");
+    } else {
+      res.sendFile(__dirname + "/failure.html");
     }
-    response.on("data",function(data){
+    response.on("data", function (data) {
       // console.log(JSON.parse(data));
     });
   });
@@ -49,11 +51,11 @@ app.post("/",function(req,res){
   request.end();
 });
 
-app.post("/failure",function(req,res){
+app.post("/failure", function (req, res) {
   res.redirect("/");
 });
 
-app.listen(process.env.PORT || 3000,function(){
+app.listen(process.env.PORT || 3000, function () {
   console.log("server running at port 3000");
 });
 
